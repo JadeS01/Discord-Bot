@@ -2,7 +2,6 @@ import discord
 import requests
 import os
 
-from dotenv import load_dotenv
 from discord import app_commands
 from discord.ext import commands
 
