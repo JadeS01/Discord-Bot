@@ -1,11 +1,12 @@
 import discord
 import asyncio
 import os
-import pymongo
+import secrets
+import helpers
 
 from dotenv import load_dotenv
 from discord.ext import commands
-from discord import app_commands
+from db.mongodb import get_db
 
 load_dotenv()
 
@@ -29,8 +30,46 @@ async def on_message(message):
 
 # Apps cmds
 @client.tree.context_menu(name = 'Echo', guild = discord.Object(id = os.getenv('GUILD_ID')))
-async def hello(interaction: discord.Interaction, message: discord.Message):
-    await interaction.response.send_message(f'{message.content}')
+async def echo(interaction: discord.Interaction, message: discord.Message):
+    author = message.author.id
+    await interaction.response.send_message(f'{message.content} \n\t- <@{author}>')
+
+# Modify this to save user tickets under current guild rather than expose every guild tickets
+@client.tree.context_menu(name = 'Save This', guild = discord.Object(id = os.getenv('GUILD_ID')))
+async def save_this(interaction: discord.Interaction, message: discord.Message):
+    author = message.author.id
+    if author == client.user.id:
+        await interaction.response.send_message('Why do you need to save my message?')
+    else:
+        key = {'author': author}
+        user = f'<@{author}>'
+        attachments = None
+        content = None
+        if message.attachments:
+            attachments = helpers.get_attachments(message.attachments)
+        if message.content:
+            content = message.content
+        data = {'message': content, 'attachments': attachments}
+        get_db().server_messages_log.update_one(key, {'$inc': {'tickets': 1}}, True)
+        ticket = {f'ticket_id.{secrets.token_hex(6)}': data}
+        get_db().server_messages_log.update_one(key, {'$set': ticket}, True)
+        await interaction.response.send_message(f"Saved {user} 's message")
+
+# Perhaps modify or create a new command that only returns a certain amount rather than all tickets
+@client.tree.context_menu(name = 'Expose Them', guild = discord.Object(id = os.getenv('GUILD_ID')))
+async def expose_them(interaction: discord.Interaction, message: discord.Message):
+    author = message.author.id
+    if author == client.user.id:
+        await interaction.response.send_message("You can't expose me.")
+    else:
+        key = {'author': author}
+        messages = ''
+        data = get_db().server_messages_log.find_one(key)
+        for ticket in data['ticket_id']:
+            messages = messages + '\n' + f"'{data['ticket_id'][ticket]['message']}'"
+        description = f'Exposing <@{author}>: \n{messages}'
+        embed = discord.Embed(description = description)
+        await interaction.response.send_message(embed = embed)
 
 async def load():
     for file in os.listdir('./cogs'):

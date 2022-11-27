@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from mongodb import db
+from db.mongodb import get_db
 
 class Buttons(discord.ui.View):
     def __init__(self, *, timeout = 180.0):
@@ -12,9 +12,13 @@ class Buttons(discord.ui.View):
         # print(interaction.user.id)
         author = interaction.user.id
         key = {'author': author}
-        db.button_clicks.update_one(key, {'$inc': {'clicks': 1}}, True)
-        clicks = db.button_clicks.find_one(key)
-        await interaction.response.send_message(f"You've clicked {clicks['clicks']} time(s)", ephemeral = True)
+        get_db().button_clicks.update_one(key, {'$inc': {'clicks': 1}}, True)
+        clicks = get_db().button_clicks.find_one(key)
+        if clicks['clicks'] % 10 == 0:
+            user = f'<@{author}>'
+            await interaction.response.send_message(f"{user} has been clicking a lot! ({clicks['clicks']} clicks)")
+        else:
+            await interaction.response.send_message(f"You've clicked {clicks['clicks']} time(s)", ephemeral = True)
 
 class Click(commands.Cog):
     def __init__(self, client):
@@ -22,7 +26,7 @@ class Click(commands.Cog):
     
     @commands.Cog.listener()
     async def on_ready(self):
-        print(db)
+        print(get_db())
         print('Button cog loaded')
 
     @commands.command()
