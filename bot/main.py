@@ -10,7 +10,7 @@ from db.mongodb import get_db
 
 load_dotenv()
 
-intents = discord.Intents.default()
+intents = discord.Intents.all()
 intents.message_content = True
 client = commands.Bot(
     command_prefix='$',

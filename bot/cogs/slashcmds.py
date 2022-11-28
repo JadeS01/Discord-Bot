@@ -22,7 +22,8 @@ class SlashCmds(commands.Cog):
     @app_commands.command(name = 'ping', description = 'Test slash command')
     # You can add params like param: str
     async def ping(self, interaction: discord.Interaction):
-        await interaction.response.send_message('Pong')
+        ping = round(self.client.latency * 1000)
+        await interaction.response.send_message(f'Pong: {ping}ms')
     
     @app_commands.command(name = 'pong', description = 'Test slash command #2')
     async def pong(self, interaction: discord.Interaction):
