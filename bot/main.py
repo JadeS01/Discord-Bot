@@ -12,7 +12,13 @@ load_dotenv()
 
 intents = discord.Intents.default()
 intents.message_content = True
-client = commands.Bot(command_prefix='$', intents = intents, application_id = os.getenv('APP_ID'))
+client = commands.Bot(
+    command_prefix='$',
+    intents = intents,
+    activity = discord.Game(name = 'under development'),
+    status = discord.Status.do_not_disturb,
+    application_id = os.getenv('APP_ID')
+)
 
 @client.event
 async def on_ready():
