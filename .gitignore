@@ -1,1 +1,5 @@
 .env
+.env.debug
+**/__pycache__
+
+**/bin
