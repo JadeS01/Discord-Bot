@@ -1,6 +1,14 @@
 .env
 .env.debug
 **/__pycache__
+__pycache__/
+*.py[cod]
+*$py.class
 
 **/bin
 **/*.png
+*.pyc
+*.pyo
+lib/
+**/lib
+**/*.cfg
