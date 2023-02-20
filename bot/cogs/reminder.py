@@ -1,4 +1,3 @@
-import discord
 from discord.ext import commands
 import asyncio
 import re
@@ -18,19 +17,18 @@ class Reminder(commands.Cog):
             await ctx.send("Please wait your your existing timer to end.")
             return
         if not re.match(r'\d+min', timer):
-            await ctx.send(f"{timer} is not a valid argument. Please format your timer as a number immediately followed by 'min'; e.g. 95min.")
+            await ctx.send(f"{timer} is not a valid argument. Please format your timer as a number immediately followed by 'min'; e.g. `95min`.")
             return
         duration = timer.replace("min", "")
         duration = int(duration) * 60
-        print(duration)
         async def timer_task():
             await asyncio.sleep(duration)
+            await ctx.send(f"Reminder for {ctx.author.mention}'s `{reason}`.")
             timer_task = self.reminders.pop(ctx.author.id)
             timer_task.cancel()
-            await ctx.send(f"Reminder for {ctx.author.mention}'s {reason}.")
         timer_task = self.client.loop.create_task(timer_task())
         self.reminders[ctx.author.id] = timer_task
-        await ctx.send(f"I'll remind {ctx.author.mention} for {reason} in {timer}.")
+        await ctx.send(f"I'll remind {ctx.author.mention} for `{reason}` in `{timer}`.")
 
     @commands.command()
     async def cancel_remind(self, ctx):

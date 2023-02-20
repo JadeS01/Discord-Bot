@@ -34,6 +34,14 @@ async def on_message(message):
         return
     await message.channel.send('elloo')
 
+@client.event
+async def on_member_join(member):
+    channel = member.guild.system_channel
+    if channel is not None:
+        embed = discord.Embed(title="New Member", description=f"Weclome {member.mention}", color=discord.Color.green())
+        embed.set_image(url="https://media.giphy.com/media/icUEIrjnUuFCWDxFpU/giphy.gif")
+        await channel.send(embed=embed)
+
 # Apps cmds
 @client.tree.context_menu(name = 'Echo', guild = discord.Object(id = os.getenv('GUILD_ID')))
 async def echo(interaction: discord.Interaction, message: discord.Message):
