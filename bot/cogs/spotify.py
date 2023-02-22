@@ -1,15 +1,33 @@
 import discord
-
-from discord.ext import commands
-from discord import Spotify
+import spotipy
+import requests
+import base64
+import os
+from discord.ext import commands, tasks
+from spotipy.oauth2 import SpotifyClientCredentials
 
 class Spotify(commands.Cog):
     def __init__(self, client):
         self.client = client
+        spotify_client = os.getenv('SPOTIFY_CLIENT')
+        spotify_secret = os.getenv('SPOTIFY_SECRET')
+        base64_credentials = base64.b64encode(f"{spotify_client}:{spotify_secret}".encode()).decode()
+        auth_response = requests.post('https://accounts.spotify.com/api/token', {'grant_type': 'client_credentials'}, headers={'Authorization': f'Basic {base64_credentials}'})
+        auth_response_data = auth_response.json()
+        playlists_response = requests.get('https://api.spotify.com/v1/me/playlists', headers={'Authorization': f'Bearer {auth_response_data["access_token"]}'})
 
     @commands.Cog.listener()
     async def on_ready(self):
         print('Spotify cog')
+
+    @commands.command()
+    async def play(self, ctx):
+        if ctx.voice_client and not ctx.author.voice:
+            await ctx.send("You're not in VC.")
+            return
+        if not ctx.voice_client:
+            await ctx.send("Use `$join` so I can hop on VC.")
+            return
     
     @commands.command()
     async def track(self, ctx, user: discord.Member = None):
